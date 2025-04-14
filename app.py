@@ -64,9 +64,10 @@ def index():
 
         return render_template('index.html',
                                result={'methylated_primers': methylated_primers},
-                               input=sequence)
+                               input=sequence,
+                               submitted=True)
 
-    return render_template('index.html', result=None, form_data={})
+    return render_template('index.html', result=None, submitted=False)
 
 
 if __name__ == '__main__':

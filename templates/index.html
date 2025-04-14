@@ -95,7 +95,7 @@
             </div>
         </form>
 
-        {% if result.methylated_primers %}
+        {% if result is not none and result|length == 0 %}
         <h2 id="results-section" style="text-align: center; margin-top: 40px;">Methylation Primer Candidates</h2>
 
         <div class="results-grid">
@@ -197,7 +197,8 @@
             </div>
             {% endfor %}
         </div>
-        {% else %}
+        {% endif %}
+        {% if submitted and result and result.methylated_primers|length == 0 %}
         <h2 id="results-section" style="text-align: center; margin-top: 40px; color: red;">
             No candidate found. Please modify your selection criteria.
         </h2>
