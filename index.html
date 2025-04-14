@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MethylCraft – Methylation Primer Designer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+
+        <h1 style="text-align: center; font-size: 2.2rem; margin-bottom: 30px;">
+            Welcome to <span style="color:#007BFF;">MethylCraft</span><sup
+                style="color: #dc3545; font-size: 1rem;">beta</sup>
+        </h1>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <div class="theme-toggle">
+            <label class="switch">
+                <input type="checkbox" id="darkModeToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Dark Mode</span>
+        </div>
+
+
+        <form method="post">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-danger" role="alert" style="text-align: center; font-weight: bold;">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            <br>
+            {% endwith %}
+            <div class="flex-form">
+                <!-- Left Column: DNA Sequence -->
+                <div class="column">
+                    <label for="sequence"><strong>Input DNA Sequence (original):</strong></label><br>
+                    <textarea name="sequence" rows="8" placeholder="Enter your DNA sequence here..."
+                        required>{{ request.form.get('sequence', '') }}</textarea>
+                </div>
+
+                <!-- Right Column: Parameters -->
+                <div class="column">
+                    <label><strong>Product Size Range (e.g. 70-150):</strong></label>
+                    <input type="text" name="product_size_range" placeholder="70-150"
+                        value="{{ request.form.get('product_size_range', '') }}"><br><br>
+
+                    <div class="input-grid">
+                        <!-- Primer Tm -->
+                        <div class="input-subcolumn">
+                            <label><strong>Primer Tm (°C)</strong></label><br>
+                            Min: <input type="number" name="primer_min_tm" step="0.1" placeholder="52.0"
+                                value="{{ request.form.get('primer_min_tm', '') }}">
+                            Opt: <input type="number" name="primer_opt_tm" step="0.1" placeholder="55.0"
+                                value="{{ request.form.get('primer_opt_tm', '') }}">
+                            Max: <input type="number" name="primer_max_tm" step="0.1" placeholder="58.0"
+                                value="{{ request.form.get('primer_max_tm', '') }}">
+                        </div>
+
+                        <!-- Probe Tm -->
+                        <div class="input-subcolumn">
+                            <label><strong>Probe Tm (°C)</strong></label><br>
+                            Min: <input type="number" name="probe_min_tm" step="0.1" placeholder="57.0"
+                                value="{{ request.form.get('probe_min_tm', '') }}">
+                            Opt: <input type="number" name="probe_opt_tm" step="0.1" placeholder="60.0"
+                                value="{{ request.form.get('probe_opt_tm', '') }}">
+                            Max: <input type="number" name="probe_max_tm" step="0.1" placeholder="63.0"
+                                value="{{ request.form.get('probe_max_tm', '') }}">
+                        </div>
+
+                        <!-- Salt & Buffers -->
+                        <div class="input-subcolumn">
+                            <label><strong>Salt & Buffer (mM)</strong></label><br>
+                            Monovalent: <input type="number" name="salt_mono" step="1" placeholder="50"
+                                value="{{ request.form.get('salt_mono', '') }}">
+                            Divalent: <input type="number" name="salt_div" step="0.1" placeholder="3.0"
+                                value="{{ request.form.get('salt_div', '') }}">
+                            dNTP: <input type="number" name="dntp_conc" step="0.1" placeholder="0.8"
+                                value="{{ request.form.get('dntp_conc', '') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div style="text-align: center;">
+                <button type="submit">Craft!</button>
+            </div>
+        </form>
+
+        {% if result.methylated_primers %}
+        <h2 id="results-section" style="text-align: center; margin-top: 40px;">Methylation Primer Candidates</h2>
+
+        <div class="results-grid">
+            {% for p in result.methylated_primers %}
+            <div class="primer-card">
+                <h3 class="card-title">Primer Pair {{ loop.index }}</h3>
+                <p class="card-subtitle"><strong>Product Size:</strong> {{ p.product_size }} bp</p>
+
+                <div class="compact-card-body">
+                    <div class="compact-header-row">
+                        <div class="title-cell"></div>
+                        <div class="seq-cell"></div>
+                        <div class="metric-cell">
+                            3'_TH <span class="info-icon" onclick="toggleInfo('self-info')">❔</span>
+                            <div id="self-info" class="info-text">Predicted melting temperature of self-dimer (3'-end)
+                            </div>
+                        </div>
+                        <div class="metric-cell">
+                            Hairpin <span class="info-icon" onclick="toggleInfo('hairpin-info')">❔</span>
+                            <div id="hairpin-info" class="info-text">Predicted melting temperature of hairpin</div>
+                        </div>
+                    </div>
+
+                    <div class="compact-row">
+                        <div class="title-cell"><strong>Forward Primer</strong></div>
+                        <div class="seq-cell">
+                            {{ p.degenerate_left | safe }}<br>
+                            Length: {{ p.left | length }} bp | Tm: {{ p.left_tm | round(1) }}°C | GC: {{ p.left_gc |
+                            round(1) }}%
+                        </div>
+                        <div class="metric-cell">{{ p.left_self_end }}</div>
+                        <div class="metric-cell">{{ p.left_hairpin }}</div>
+                    </div>
+
+                    <div class="compact-row">
+                        <div class="title-cell"><strong>Reverse Primer</strong></div>
+                        <div class="seq-cell">
+                            {{ p.degenerate_right | safe }}<br>
+                            Length: {{ p.right | length }} bp | Tm: {{ p.right_tm | round(1) }}°C | GC: {{ p.right_gc |
+                            round(1) }}%
+                        </div>
+                        <div class="metric-cell">{{ p.right_self_end }}</div>
+                        <div class="metric-cell">{{ p.right_hairpin }}</div>
+                    </div>
+
+                    <div class="compact-row">
+                        <div class="title-cell"><strong>M-Probe</strong></div>
+                        <div class="seq-cell">
+                            {{ p.highlighted_probe_m | safe }}<br>
+                            Length: {{ p.probe_m | length }} bp | Tm: {{ p.probe_m_tm | round(1) }}°C | GC: {{
+                            p.probe_m_gc | round(1) }}%
+                        </div>
+                        <div class="metric-cell">{{ p.probe_m_self_end }}</div>
+                        <div class="metric-cell">{{ p.probe_m_hairpin }}</div>
+                    </div>
+
+                    {% if p.probe_u %}
+                    <div class="compact-row">
+                        <div class="title-cell"><strong>U-Probe</strong></div>
+                        <div class="seq-cell">
+                            {{ p.highlighted_probe_u | safe }}<br>
+                            Length: {{ p.probe_u | length }} bp | Tm: {{ p.probe_u_tm | round(1) }}°C | GC: {{
+                            p.probe_u_gc | round(1) }}%
+                        </div>
+                        <div class="metric-cell">{{ p.probe_u_self_end }}</div>
+                        <div class="metric-cell">{{ p.probe_u_hairpin }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="primer-block-copy" style="display: none;">
+                    Primer pair {{ loop.index }}
+                    Product size: {{ p.product_size }} bp
+
+                    Forward Primer:
+                    {{ p.degenerate_left }}
+                    Length: {{ p.left | length }} bp | Tm: {{ p.left_tm | round(1) }}°C | GC: {{ p.left_gc | round(1)
+                    }}%
+
+                    Reverse Primer:
+                    {{ p.degenerate_right }}
+                    Length: {{ p.right | length }} bp | Tm: {{ p.right_tm | round(1) }}°C | GC: {{ p.right_gc | round(1)
+                    }}%
+
+                    Methylated Probe:
+                    {{ p.probe_m }}
+                    Length: {{ p.probe_m | length }} bp | Tm: {{ p.probe_m_tm | round(1) }}°C | GC: {{ p.probe_m_gc |
+                    round(1) }}%
+                    {% if p.probe_u %}
+                    Unmethylated Probe:
+                    {{ p.probe_u }}
+                    Length: {{ p.probe_u | length }} bp | Tm: {{ p.probe_u_tm | round(1) }}°C | GC: {{ p.probe_u_gc |
+                    round(1) }}%
+                    {% endif %}
+                </div>
+
+                <button class="card-copy-btn" onclick="copyPrimerBlock(this)">📋</button>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <h2 id="results-section" style="text-align: center; margin-top: 40px; color: red;">
+            No candidate found. Please modify your selection criteria.
+        </h2>
+        {% endif %}
+
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="scrollToTop()" title="Back to Top">⬆️</button>
+
+</body>
+
+</html>
