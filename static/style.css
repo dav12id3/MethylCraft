@@ -5,6 +5,14 @@ body {
     margin: 0;
     padding: 20px;
     background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    min-height: 95vh;
+    margin: 0;
+}
+
+main {
+    flex: 1;
 }
 
 .container {
@@ -325,4 +333,27 @@ body.dark-mode .copy-btn,
 body.dark-mode .card-copy-btn {
     background-color: #1e1e1e;
     color: #eee;
+}
+
+.tool-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 60px;
+    padding: 20px 10px;
+    border-top: 1px solid #ddd;
+}
+
+body.dark-mode .tool-footer {
+    color: #aaa;
+    border-top: 1px solid #333;
+}
+
+.tool-footer a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.tool-footer a:hover {
+    text-decoration: underline;
 }
