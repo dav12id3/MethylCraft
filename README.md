@@ -38,7 +38,7 @@ MethylCraft/
 | File         | Description |
 |--------------|-------------|
 | **`app.py`** | The main Flask application. Handles routing (`GET`) when users visit websiite and (`POST`) when users input sequence and searching criteria. It also perform input validation, in silico bisulfite conversion, primer/probe generation via `primer3-py`, and rendering of results using `index.html`. |
-| **`helper.py`** | Contains core helper functions used by `app.py`, including: <br>– `bisulfite_convert()` for DNA transformation <br>– `run_primer3()` for calling Primer3 using user inputs (if provided) <br>– `design_probe_from_fixed_primers()` for U-Probe finding <br>– Other functions such as CpG counting, degenerate primer creation, probe filtering, and highlighting logic are also defined and called in the core hekper functions. |
+| **`helper.py`** | Contains core helper functions used by `app.py`, including: <br>– `bisulfite_convert()` for DNA transformation <br>– `run_primer3()` for calling Primer3 using user inputs (if provided) <br>– `design_probe_from_fixed_primers()` for finding U-Probe <br>– Other functions such as CpG counting, degenerate primer creation, probe filtering, and highlighting logic are also defined and called in the core helper functions. |
 
 ---
 
