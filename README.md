@@ -11,7 +11,7 @@ Built on top of the `primer3-py` library (a Python API for Primer3), the app all
 
 - Automatically perform **in silico bisulfite conversion**
 - Customize primer/probe design: Tm, GC content, product size, salt/dNTP concentrations
-- Identify both methylation-sensitive (M-Probe) and methylation-insensitive (U-Probe) probes
+- Identify both methylation-specific (M-Probe) and unmethylation-specific (U-Probe) probes
 - Quickly copy sequences and view detailed thermodynamic metrics
 
 ## Detailed desrciption for project structure and individual files
